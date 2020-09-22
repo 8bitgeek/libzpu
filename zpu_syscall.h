@@ -8,6 +8,6 @@
 #define SYS_READ  4
 #define SYS_WRITE 5
 
-void syscall(zpu_t* zpu, uint32_t sp);
+void syscall(zpu_t* zpu);
 
 #endif

@@ -13,7 +13,6 @@ zpu_t zpu;
 
 int main(int argc, char *argv[])
 {
-    printf( "ZOG v0.11\n");
     memset(text_mem,0,MEMORY_SIZE);
     zpu_mem_init((zpu_mem_t*)NULL,&zpu_mem,"text",text_mem,0,MEMORY_SIZE);
     zpu_set_mem(&zpu,&zpu_mem);

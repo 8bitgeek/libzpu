@@ -36,7 +36,7 @@ void emulate(zpu_t* zpu)
     push( zpu, zpu_get_tos(zpu) );
     zpu_set_tos( zpu, zpu_get_pc(zpu) + 1);
     zpu_set_pc( zpu, ( zpu_mem_get_uint8( zpu_get_mem(zpu), zpu_get_pc(zpu) ) - 32) * VECTORSIZE + VECTORBASE);
-    zpu->touchedPc = true;
+    zpu->pc_dirty = true;
 }
 
 void zpu_reset(zpu_t* zpu)
@@ -44,8 +44,8 @@ void zpu_reset(zpu_t* zpu)
     zpu_load( zpu );
     zpu_set_pc( zpu, 0 );
     zpu->instruction = 0;
-    zpu->touchedPc   = true;
-    zpu->decodeMask  = 0;
+    zpu->pc_dirty   = true;
+    zpu->decode_mask  = 0;
 #if 0
     zpu_set_sp( zpu, 0xFFFFFFF );
 #else
@@ -58,36 +58,13 @@ void zpu_execute(zpu_t* zpu)
 {
     for (;;)
     {
-        zpu->touchedPc = false;
+        zpu->pc_dirty = false;
 
         zpu->instruction = zpu_mem_get_uint8( zpu_get_mem(zpu), zpu_get_pc(zpu) );
 
-        // printf( "%d\n",zpu->instruction);
-
-#if 0
-        static int step = 0;
-        if (step == 0)
-        {
-            printf ("#pc,opcode,sp,top_of_stack,next_on_stack\n");
-            printf ("#----------\n");
-            printf ("\n");
-        }
-        printf ("0x%07x 0x%02x 0x%08x 0x%08x 0x%08x\n", zpu->pc, zpu->instruction, zpu->sp, zpu->tos, zpu_mem_get_uint32( zpu_get_mem(zpu), zpu->sp + 4));
-        fflush(0);      
-        //memoryDisplayLong(sp - 16*4, 32);
-        //printf("\n");
-        //getchar();
-        if (step++ == 10000)
-        {
-            printf("Done.\n");
-            fflush(0);  
-            exit(0);
-        }
-#endif
-
         if ((zpu->instruction & 0x80) == ZPU_IM)
         {
-            if (zpu->decodeMask)
+            if (zpu->decode_mask)
             {
                 zpu_set_tos(zpu,zpu_get_tos(zpu) << 7);
                 zpu_set_tos(zpu, zpu_get_tos(zpu) | (zpu->instruction & 0x7f) );
@@ -98,11 +75,11 @@ void zpu_execute(zpu_t* zpu)
                 zpu_set_tos(zpu,zpu->instruction << 25);
                 zpu_set_tos(zpu,((int32_t)zpu_get_tos(zpu)) >> 25);
             }
-            zpu->decodeMask = true;
+            zpu->decode_mask = true;
         }
         else
         {
-            zpu->decodeMask = false;
+            zpu->decode_mask = false;
             if ((zpu->instruction & 0xF0) == ZPU_ADDSP)
             {
                 uint32_t addr;
@@ -166,12 +143,12 @@ void zpu_execute(zpu_t* zpu)
                     case ZPU_POPPC:
                         zpu_set_pc(zpu,zpu_get_tos(zpu));
                         zpu_set_tos(zpu,pop(zpu));
-                        zpu->touchedPc = true;
+                        zpu->pc_dirty = true;
                         break;
                     case ZPU_POPPCREL:
                         zpu_set_pc( zpu,zpu_get_pc(zpu) + zpu_get_tos(zpu) );
                         zpu_set_tos( zpu,pop(zpu) );
-                        zpu->touchedPc = true;
+                        zpu->pc_dirty = true;
                         break;
                     case ZPU_FLIP:
                         zpu_set_tos( zpu, flip( zpu_get_tos(zpu) ) );
@@ -261,7 +238,7 @@ void zpu_execute(zpu_t* zpu)
                         if ((int32_t)zpu_get_nos(zpu) == 0)
                         {
                             zpu_set_pc(zpu,zpu_get_pc(zpu) + zpu_get_tos(zpu));
-                            zpu->touchedPc = true;
+                            zpu->pc_dirty = true;
                         }
                         zpu_set_tos( zpu, pop(zpu) );
                         break;
@@ -270,7 +247,7 @@ void zpu_execute(zpu_t* zpu)
                         if (zpu_get_nos(zpu) != 0)
                         {
                             zpu_set_pc(zpu,zpu_get_pc(zpu) + zpu_get_tos(zpu));
-                            zpu->touchedPc = true;
+                            zpu->pc_dirty = true;
                         }
                         zpu_set_tos( zpu, pop(zpu) );
                         break;
@@ -314,13 +291,13 @@ void zpu_execute(zpu_t* zpu)
                         zpu_set_nos( zpu, zpu_get_tos(zpu) );
                         zpu_set_tos( zpu, zpu_get_pc(zpu) + 1 );
                         zpu_set_pc( zpu, zpu_get_nos(zpu) );
-                        zpu->touchedPc = true;
+                        zpu->pc_dirty = true;
                         break;
                     case ZPU_CALLPCREL:
                         zpu_set_nos( zpu, zpu_get_tos(zpu) );
                         zpu_set_tos( zpu, zpu_get_pc(zpu) + 1 );
                         zpu_set_pc( zpu, zpu_get_pc(zpu) + zpu_get_nos(zpu) );
-                        zpu->touchedPc = true;
+                        zpu->pc_dirty = true;
                         break;
                     case ZPU_EQ:
                         zpu_set_nos( zpu, pop(zpu) );
@@ -347,7 +324,7 @@ void zpu_execute(zpu_t* zpu)
                     case ZPU_SYSCALL:
                         // Flush tos to real stack
                         zpu_mem_set_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu), zpu_get_tos(zpu));
-                        syscall(zpu,zpu_get_sp(zpu));
+                        syscall(zpu);
                         break;
                     default:
                         printf ("Illegal Instruction\n");
@@ -357,10 +334,10 @@ void zpu_execute(zpu_t* zpu)
                 }
             }
         }
-        if (!zpu->touchedPc)
+        if (!zpu->pc_dirty)
         {
             zpu_set_pc(zpu,zpu_get_pc(zpu) + 1);
-            zpu->touchedPc = true;
+            zpu->pc_dirty = true;
         }
     }
 }
@@ -395,7 +372,7 @@ static uint32_t flip(uint32_t i)
 
 static void printRegs(zpu_t* zpu)
 {
-    printf ("PC=%08x SP=%08x TOS=%08x OP=%02x DM=%02x debug=%08x\n", zpu_get_pc(zpu), zpu_get_sp(zpu), zpu_get_tos(zpu), zpu->instruction, zpu->decodeMask, 0);
+    printf ("PC=%08x SP=%08x TOS=%08x OP=%02x DM=%02x debug=%08x\n", zpu_get_pc(zpu), zpu_get_sp(zpu), zpu_get_tos(zpu), zpu->instruction, zpu->decode_mask, 0);
     fflush(0);
 }
 

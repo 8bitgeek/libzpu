@@ -68,8 +68,8 @@ typedef struct _zpu_
     uint32_t    nos;
     uint8_t     instruction;
     uint32_t    cpu;
-    bool        touchedPc;
-    bool        decodeMask;
+    bool        pc_dirty;
+    bool        decode_mask;
 } zpu_t;
 
 #define zpu_set_sp(zpu,v)       ((zpu)->sp = (v))

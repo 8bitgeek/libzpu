@@ -7,14 +7,14 @@
 
 static int tty_getchar();
 
-void syscall(zpu_t* zpu, uint32_t sp)
+void syscall(zpu_t* zpu)
 {
-    // int returnAdd = zpu_mem_get_uint32( zpu_get_mem(zpu), sp + 0);
-    // int errNoAdd = zpu_mem_get_uint32( zpu_get_mem(zpu), sp + 4);
-    int sysCallId = zpu_mem_get_uint32( zpu_get_mem(zpu), sp + 8);
-    // int fileNo = zpu_mem_get_uint32( zpu_get_mem(zpu), sp + 12);
-    int charIndex = zpu_mem_get_uint32( zpu_get_mem(zpu), sp + 16);
-    int stringLength = zpu_mem_get_uint32( zpu_get_mem(zpu), sp + 20);
+    // int returnAdd = zpu_mem_get_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu) + 0);
+    // int errNoAdd = zpu_mem_get_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu) + 4);
+    int sysCallId = zpu_mem_get_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu) + 8);
+    // int fileNo = zpu_mem_get_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu) + 12);
+    int charIndex = zpu_mem_get_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu) + 16);
+    int stringLength = zpu_mem_get_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu) + 20);
     switch (sysCallId)
     {
         case SYS_WRITE:
