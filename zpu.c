@@ -22,7 +22,7 @@
 
 #include <zpu.h>
 #include <zpu_load.h>
-#include <zpu_memory.h>
+#include <zpu_mem.h>
 #include <zpu_syscall.h>
 
 static void     push(zpu_t* zpu,uint32_t data);
@@ -33,18 +33,15 @@ static uint32_t flip(uint32_t i);
 
 void emulate(zpu_t* zpu)
 {
-    push(zpu,zpu_get_tos(zpu));
-    zpu_set_tos(zpu,zpu_get_pc(zpu) + 1);
-    zpu_set_pc(zpu,(memoryReadByte(zpu_get_pc(zpu)) - 32) * VECTORSIZE + VECTORBASE);
+    push( zpu, zpu_get_tos(zpu) );
+    zpu_set_tos( zpu, zpu_get_pc(zpu) + 1);
+    zpu_set_pc( zpu, ( zpu_mem_get_uint8( zpu_get_mem(zpu), zpu_get_pc(zpu) ) - 32) * VECTORSIZE + VECTORBASE);
     zpu->touchedPc = true;
 }
 
-
 void zpu_reset(zpu_t* zpu)
 {
-    memoryInitialize();
-    sysinitialize();
-    zpu_load();
+    zpu_load( zpu );
     zpu_set_pc( zpu, 0 );
     zpu->instruction = 0;
     zpu->touchedPc   = true;
@@ -57,14 +54,13 @@ void zpu_reset(zpu_t* zpu)
     zpu_set_tos( zpu, 0 );
 }
 
-
 void zpu_execute(zpu_t* zpu)
 {
     for (;;)
     {
         zpu->touchedPc = false;
 
-        zpu->instruction = memoryReadByte(zpu_get_pc(zpu));
+        zpu->instruction = zpu_mem_get_uint8( zpu_get_mem(zpu), zpu_get_pc(zpu) );
 
         // printf( "%d\n",zpu->instruction);
 
@@ -76,7 +72,7 @@ void zpu_execute(zpu_t* zpu)
             printf ("#----------\n");
             printf ("\n");
         }
-        printf ("0x%07x 0x%02x 0x%08x 0x%08x 0x%08x\n", zpu->pc, zpu->instruction, zpu->sp, zpu->tos, memoryReadLong(zpu->sp + 4));
+        printf ("0x%07x 0x%02x 0x%08x 0x%08x 0x%08x\n", zpu->pc, zpu->instruction, zpu->sp, zpu->tos, zpu_mem_get_uint32( zpu_get_mem(zpu), zpu->sp + 4));
         fflush(0);      
         //memoryDisplayLong(sp - 16*4, 32);
         //printf("\n");
@@ -116,23 +112,23 @@ void zpu_execute(zpu_t* zpu)
                 if (addr == zpu_get_sp(zpu))
                     zpu_set_tos(zpu,zpu_get_tos(zpu) + zpu_get_tos(zpu));
                 else
-                    zpu_set_tos(zpu,zpu_get_tos(zpu) + memoryReadLong(addr));
+                    zpu_set_tos(zpu,zpu_get_tos(zpu) + zpu_mem_get_uint32( zpu_get_mem(zpu), addr));
             }
             else if ((zpu->instruction & 0xE0) == ZPU_LOADSP)
             {
                 uint32_t addr;
-		        //memoryWriteLong(sp, tos);                    // Need this?
+		        //zpu_mem_set_uint32( zpu_get_mem(zpu), sp, tos);                    // Need this?
                 addr = (zpu->instruction & 0x1F) ^ 0x10;
                 addr = zpu_get_sp(zpu) + 4 * addr;
                 push(zpu,zpu_get_tos(zpu));
-                zpu_set_tos(zpu,memoryReadLong(addr));
+                zpu_set_tos(zpu,zpu_mem_get_uint32( zpu_get_mem(zpu), addr));
             }
             else if ((zpu->instruction & 0xE0) == ZPU_STORESP)
             {
                 uint32_t addr;
                 addr = (zpu->instruction & 0x1F) ^ 0x10;
                 addr = zpu_get_sp(zpu) + 4 * addr;
-                memoryWriteLong(addr, zpu_get_tos(zpu));
+                zpu_mem_set_uint32( zpu_get_mem(zpu), addr, zpu_get_tos(zpu));
                 zpu_set_tos(zpu,pop(zpu));
             }
             else
@@ -156,15 +152,15 @@ void zpu_execute(zpu_t* zpu)
                         zpu_set_tos(zpu, ~zpu_get_tos(zpu) );
                         break;
                     case ZPU_LOAD:
-		                //memoryWriteLong(sp, tos);            // Need this?
-                        zpu_set_tos(zpu, memoryReadLong(zpu_get_tos(zpu)) );
+		                //zpu_mem_set_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu), zpu_get_tos(zpu));            // Need this?
+                        zpu_set_tos(zpu, zpu_mem_get_uint32( zpu_get_mem(zpu), zpu_get_tos(zpu)) );
                         break;
                     case ZPU_PUSHSPADD:
                         zpu_set_tos(zpu,(zpu_get_tos(zpu) * 4) + zpu_get_sp(zpu));
                         break;
                     case ZPU_STORE:
                         zpu_set_nos(zpu,pop(zpu));
-			            memoryWriteLong(zpu_get_tos(zpu), zpu_get_nos(zpu));
+			            zpu_mem_set_uint32( zpu_get_mem(zpu), zpu_get_tos(zpu), zpu_get_nos(zpu));
                         zpu_set_tos(zpu,pop(zpu));
                         break;
                     case ZPU_POPPC:
@@ -182,7 +178,7 @@ void zpu_execute(zpu_t* zpu)
                         break;
                     case ZPU_ADD:
                         zpu_set_nos( zpu, pop(zpu) );
-                        zpu_set_tos( zpu,  zpu_get_tos(zpu) + zpu_get_nos(zpu) );
+                        zpu_set_tos( zpu, zpu_get_tos(zpu) + zpu_get_nos(zpu) );
                         break;
                     case ZPU_SUB:
                         zpu_set_nos( zpu, pop( zpu ) );
@@ -193,9 +189,9 @@ void zpu_execute(zpu_t* zpu)
 			            zpu_set_tos( zpu, zpu_get_sp(zpu) + 4 );
                         break;
                     case ZPU_POPSP:
-                        //memoryWriteLong(sp, tos);            // Need this ?
+                        //zpu_mem_set_uint32( zpu_get_mem(zpu), sp, tos);            // Need this ?
                         zpu_set_sp( zpu, zpu_get_tos(zpu) );
-                        zpu_set_tos( zpu, memoryReadLong(zpu_get_sp(zpu)) );
+                        zpu_set_tos( zpu, zpu_mem_get_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu)) );
                         break;
                     case ZPU_NOP:
                         break;
@@ -208,21 +204,21 @@ void zpu_execute(zpu_t* zpu)
                         zpu_set_tos( zpu, zpu_get_tos(zpu) ^ zpu_get_nos(zpu) );
                         break;
                     case ZPU_LOADB:
-		                //memoryWriteLong(sp, tos);            //Need this ?
-                        zpu_set_tos( zpu, memoryReadByte(zpu_get_tos(zpu)) );
+		                //zpu_mem_set_uint32( zpu_get_mem(zpu), sp, tos);            //Need this ?
+                        zpu_set_tos( zpu,zpu_mem_get_uint8( zpu_get_mem(zpu), zpu_get_tos(zpu)) );
                         break;
                     case ZPU_STOREB:
                         zpu_set_nos( zpu, pop( zpu ) );
-                        memoryWriteByte(zpu_get_tos(zpu),zpu_get_nos(zpu));
+                        zpu_mem_set_uint8( zpu_get_mem(zpu), zpu_get_tos(zpu),zpu_get_nos(zpu));
                         zpu_set_tos( zpu, pop(zpu) );
                         break;
                     case ZPU_LOADH:
-		                //memoryWriteLong(sp, tos);            //Need this ?
-                        zpu_set_tos( zpu, memoryReadWord(zpu_get_tos(zpu)) );
+		                //zpu_mem_set_uint32( zpu_get_mem(zpu), sp, tos);            //Need this ?
+                        zpu_set_tos( zpu, zpu_mem_get_uint16( zpu_get_mem(zpu), zpu_get_tos(zpu)) );
                         break;
                     case ZPU_STOREH:
                         zpu_set_nos( zpu, pop(zpu) );
-                        memoryWriteWord(zpu_get_tos(zpu),zpu_get_nos(zpu));
+                        zpu_mem_set_uint16( zpu_get_mem(zpu), zpu_get_tos(zpu),zpu_get_nos(zpu));
                         zpu_set_tos( zpu, pop(zpu) );
                         break;
                     case ZPU_LESSTHAN:
@@ -312,7 +308,7 @@ void zpu_execute(zpu_t* zpu)
                         break;
                     case ZPU_ASHIFTRIGHT:
                         zpu_set_nos( zpu, pop(zpu) );
-                        zpu_set_tos( zpu, (int32_t)zpu_get_nos(zpu) >> (zpu_get_tos(zpu) & 0x3f) );
+                        zpu_set_tos( zpu, zpu_get_nos(zpu) >> (zpu_get_tos(zpu) & 0x3f) );
                         break;
                     case ZPU_CALL:
                         zpu_set_nos( zpu, zpu_get_tos(zpu) );
@@ -350,8 +346,8 @@ void zpu_execute(zpu_t* zpu)
                         break;
                     case ZPU_SYSCALL:
                         // Flush tos to real stack
-                        memoryWriteLong(zpu_get_sp(zpu), zpu_get_tos(zpu));
-                        syscall(zpu_get_sp(zpu));
+                        zpu_mem_set_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu), zpu_get_tos(zpu));
+                        syscall(zpu,zpu_get_sp(zpu));
                         break;
                     default:
                         printf ("Illegal Instruction\n");
@@ -375,14 +371,14 @@ void zpu_execute(zpu_t* zpu)
 static uint32_t pop(zpu_t* zpu)
 {
     zpu_inc_sp(zpu);
-    return memoryReadLong(zpu_get_sp(zpu));
+    return zpu_mem_get_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu));
 }
 
 
 static void push(zpu_t* zpu,uint32_t data)
 {
-    memoryWriteLong(zpu_get_sp(zpu), data);
-    xpu_dec_sp(zpu);
+    zpu_mem_set_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu), data);
+    zpu_dec_sp(zpu);
 }
 
 

@@ -6,13 +6,14 @@
 CC=gcc
 
 # Compiler flags. Compile only, debug info, all warnings, optimize for size
-CFLAGS=-c -Wall -Os -I./ -Wno-unused-result
+# CFLAGS=-c -Wall -Os -I./ -Wno-unused-result
+CFLAGS=-c -Wall -ggdb -I./ -Wno-unused-result
 
 #Linker flags. phi platform, shrink(relax) immediates, remove unwanted sections
 LDFLAGS= -static 
 
 # Source files, add more here if you have
-SOURCES=main.c zpu.c zpu_memory.c zpu_syscall.c zpu_load.c 
+SOURCES=main.c zpu.c zpu_mem.c zpu_syscall.c zpu_load.c 
 
 # Create a list of object file names from source file names
 OBJECTS=$(SOURCES:.c=.o)

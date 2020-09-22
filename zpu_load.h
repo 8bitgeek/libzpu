@@ -2,7 +2,8 @@
 #define ZPU_LOAD_H
 
 #include <stdint.h>
+#include <zpu.h>
 
-void zpu_load();
+void zpu_load(zpu_t* zpu);
 
 #endif

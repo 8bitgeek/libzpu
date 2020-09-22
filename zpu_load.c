@@ -2,10 +2,9 @@
 #include <stdlib.h>
 
 #include <zpu_load.h>
-#include <zpu_memory.h>
+#include <zpu_mem.h>
 
-
-void zpu_load()
+void zpu_load(zpu_t* zpu)
 {
     char* fileName = "test.bin";
 	FILE* f;
@@ -19,7 +18,7 @@ void zpu_load()
 		perror("");
 		exit(0);
 	}
-	for (address = 0; address < memorySize(); address++)
+	for (address = 0; address < zpu_mem_get_size(zpu_get_mem(zpu)); address++)
 	{
 		fread(&inByte, 1, 1, f);
 		if (ferror(f))
@@ -32,7 +31,7 @@ void zpu_load()
 		{
 			break;
 		}
-		memoryWriteByte(address, inByte);		
+		zpu_mem_set_uint8( zpu_get_mem(zpu), address, inByte );		
 	}
 	//printf("Loaded %d bytes from RAM image from %s\n", address, fileName);
 	fclose(f);

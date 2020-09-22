@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <zpu_mem.h>
 
 #define ZPU_IM               128
 #define ZPU_BREAKPOINT       0
@@ -58,8 +59,9 @@
 #define VECTOR_INTERRUPT     1
 #define VECTORBASE           0x0
 
-typedef struct _zpu_t_
+typedef struct _zpu_
 {
+    zpu_mem_t   *mem;
     uint32_t    pc;
     uint32_t    sp;
     uint32_t    tos;
@@ -73,7 +75,7 @@ typedef struct _zpu_t_
 #define zpu_set_sp(zpu,v)       ((zpu)->sp = (v))
 #define zpu_get_sp(zpu)         ((zpu)->sp)
 #define zpu_inc_sp(zpu)         ((zpu)->sp+=4)
-#define xpu_dec_sp(zpu)         ((zpu)->sp-=4)
+#define zpu_dec_sp(zpu)         ((zpu)->sp-=4)
 
 #define zpu_set_pc(zpu,v)       ((zpu)->pc = (v))
 #define zpu_get_pc(zpu)         ((zpu)->pc)
@@ -86,6 +88,9 @@ typedef struct _zpu_t_
 
 #define zpu_set_cpu(zpu,v)      ((zpu)->cpu = (v))
 #define zpu_get_cpu(zpu)        ((zpu)->cpu)
+
+#define zpu_set_mem(zpu,m)      ((zpu)->mem = (m))
+#define zpu_get_mem(zpu)        ((zpu)->mem)
 
 void zpu_reset(zpu_t* zpu);
 void zpu_execute(zpu_t* zpu);

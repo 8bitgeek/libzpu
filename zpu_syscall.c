@@ -3,55 +3,38 @@
 #include <termio.h>
 
 #include <zpu_syscall.h>
-#include <zpu_memory.h>
+#include <zpu_mem.h>
 
 static int tty_getchar();
-static int tty_break();
 
-void sysinitialize()
+void syscall(zpu_t* zpu, uint32_t sp)
 {
-    if (tty_break() != 0)
-    {
-        return exit(1);
-    }
-    //  tty_fix();
-}
-
-
-void syscall(uint32_t sp)
-{
-    // int returnAdd = memoryReadLong(sp + 0);
-    // int errNoAdd = memoryReadLong(sp + 4);
-    int sysCallId = memoryReadLong(sp + 8);
-    // int fileNo = memoryReadLong(sp + 12);
-    int charIndex = memoryReadLong(sp + 16);
-    int stringLength = memoryReadLong(sp + 20);
+    // int returnAdd = zpu_mem_get_uint32( zpu_get_mem(zpu), sp + 0);
+    // int errNoAdd = zpu_mem_get_uint32( zpu_get_mem(zpu), sp + 4);
+    int sysCallId = zpu_mem_get_uint32( zpu_get_mem(zpu), sp + 8);
+    // int fileNo = zpu_mem_get_uint32( zpu_get_mem(zpu), sp + 12);
+    int charIndex = zpu_mem_get_uint32( zpu_get_mem(zpu), sp + 16);
+    int stringLength = zpu_mem_get_uint32( zpu_get_mem(zpu), sp + 20);
     switch (sysCallId)
     {
         case SYS_WRITE:
             for (int i = 0; i < stringLength; i++)
             {
-                putchar(memoryReadByte(charIndex++));
+                putchar(zpu_mem_get_uint8( zpu_get_mem(zpu), charIndex++));
             }
             // Return value via R0 (AKA memory address 0)
-            memoryWriteLong(0, stringLength);
+            zpu_mem_set_uint32( zpu_get_mem(zpu), 0, stringLength);
             break;
         case SYS_READ:
             for (int i = 0; i < stringLength; i++)
             {
-                memoryWriteByte(charIndex++, tty_getchar());
+                zpu_mem_set_uint8( zpu_get_mem(zpu), charIndex++, tty_getchar());
             }
             // Return value via R0 (AKA memory address 0)
-            memoryWriteLong(0, stringLength);
+            zpu_mem_set_uint32( zpu_get_mem(zpu), 0, stringLength);
             break;
     }
 }
-
-static int tty_break()
-{
-    return 0;
-}
-
 
 int tty_fix()
 {

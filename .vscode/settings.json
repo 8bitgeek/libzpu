@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "zpu_memory.h": "c"
+        "zpu_memory.h": "c",
+        "zpu_mem.h": "c"
     }
 }
