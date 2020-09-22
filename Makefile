@@ -6,8 +6,8 @@
 CC=gcc
 
 # Compiler flags. Compile only, debug info, all warnings, optimize for size
-CFLAGS=-c -Wall -Os -I./ -Wno-unused-result
-#CFLAGS=-c -Wall -ggdb -I./ -Wno-unused-result
+#CFLAGS=-c -Wall -Os -I./ -Wno-unused-result
+CFLAGS=-c -Wall -ggdb -I./ -Wno-unused-result
 
 #Linker flags. phi platform, shrink(relax) immediates, remove unwanted sections
 LDFLAGS= -static 

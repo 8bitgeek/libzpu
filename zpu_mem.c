@@ -165,6 +165,7 @@ static void zpu_mem_append( zpu_mem_t* zpu_mem_root, zpu_mem_t* zpu_mem_seg )
         if ( next->next == NULL )
         {
             next->next = zpu_mem_seg;
+            return;
         }
     }
 }
