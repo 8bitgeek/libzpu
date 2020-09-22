@@ -1,14 +1,14 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "zpu_load.h"
-#include "zpu_memory.h"
+#include <zpu_load.h>
+#include <zpu_memory.h>
 
 
 void zpu_load()
 {
-        char* fileName = "test.bin";
+    char* fileName = "test.bin";
 	FILE* f;
-	int bytesRead;
 	int address;
 	uint8_t inByte;
 
@@ -21,7 +21,7 @@ void zpu_load()
 	}
 	for (address = 0; address < memorySize(); address++)
 	{
-		bytesRead = fread(&inByte, 1, 1, f);
+		fread(&inByte, 1, 1, f);
 		if (ferror(f))
 		{
 			printf("Error reading RAM image from %s\n", fileName);

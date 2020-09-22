@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "zpu.h"
-#include "zpu_memory.h"
-#include "zpu_io.h"
-#include "zpu_load.h"
+#include <zpu.h>
+#include <zpu_memory.h>
+#include <zpu_load.h>
 
 extern uint32_t pc;
 
@@ -92,12 +91,13 @@ uint16_t memoryReadWord(uint32_t address)
     if (address < (MEMORY_INTS*4))
     {
         uint8_t* pByte = (uint8_t*)memory + (address ^ 0x02);
-	return (*((uint16_t*)pByte));
+	    return (*((uint16_t*)pByte));
     }
     else
     {
         printf ("Read WORD out of range\n");
     }
+    return 0;
 }
 
 void memoryWriteWord(uint32_t address, uint16_t value)

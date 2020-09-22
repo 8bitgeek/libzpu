@@ -1,8 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <termio.h>
 
-#include "zpu_syscall.h"
-#include "zpu_memory.h"
+#include <zpu_syscall.h>
+#include <zpu_memory.h>
+
+static int tty_getchar();
+static int tty_break();
 
 void sysinitialize()
 {
@@ -16,10 +20,10 @@ void sysinitialize()
 
 void syscall(uint32_t sp)
 {
-    int returnAdd = memoryReadLong(sp + 0);
-    int errNoAdd = memoryReadLong(sp + 4);
+    // int returnAdd = memoryReadLong(sp + 0);
+    // int errNoAdd = memoryReadLong(sp + 4);
     int sysCallId = memoryReadLong(sp + 8);
-    int fileNo = memoryReadLong(sp + 12);
+    // int fileNo = memoryReadLong(sp + 12);
     int charIndex = memoryReadLong(sp + 16);
     int stringLength = memoryReadLong(sp + 20);
     switch (sysCallId)
@@ -43,37 +47,18 @@ void syscall(uint32_t sp)
     }
 }
 
-
-static struct termio savemodes;
-static int havemodes = 0;
-
-int tty_break()
+static int tty_break()
 {
-    struct termio modmodes;
-    if(ioctl(fileno(stdin), TCGETA, &savemodes) < 0)
-    {
-        exit(1);
-    }
-    havemodes = 1;
-    modmodes = savemodes;
-    modmodes.c_lflag &= ~ICANON;
-    modmodes.c_cc[VMIN] = 1;
-    modmodes.c_cc[VTIME] = 0;
-    return ioctl(fileno(stdin), TCSETAW, &modmodes);
-}
-
-
-int tty_getchar()
-{
-    return getchar();
+    return 0;
 }
 
 
 int tty_fix()
 {
-    if(!havemodes)
-    {
-        return (0);
-        return ioctl(fileno(stdin), TCSETAW, &savemodes);
-    }
+    return 0;
+}
+
+static int tty_getchar()
+{
+    return getchar();
 }

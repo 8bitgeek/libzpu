@@ -1,0 +1,5 @@
+{
+    "files.associations": {
+        "zpu_memory.h": "c"
+    }
+}

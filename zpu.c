@@ -18,10 +18,12 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
-#include "zpu.h"
-#include "zpu_memory.h"
-#include "zpu_syscall.h"
+#include <zpu.h>
+#include <zpu_load.h>
+#include <zpu_memory.h>
+#include <zpu_syscall.h>
 
 static void     push(zpu_t* zpu,uint32_t data);
 static uint32_t pop(zpu_t* zpu);
@@ -58,8 +60,6 @@ void zpu_reset(zpu_t* zpu)
 
 void zpu_execute(zpu_t* zpu)
 {
-    static int step = 0;
-
     for (;;)
     {
         zpu->touchedPc = false;
@@ -69,6 +69,7 @@ void zpu_execute(zpu_t* zpu)
         // printf( "%d\n",zpu->instruction);
 
 #if 0
+        static int step = 0;
         if (step == 0)
         {
             printf ("#pc,opcode,sp,top_of_stack,next_on_stack\n");
@@ -200,11 +201,11 @@ void zpu_execute(zpu_t* zpu)
                         break;
                     case ZPU_AND:
                         zpu_set_nos( zpu, pop( zpu ) );
-                        zpu_set_tos( zpu, zpu_get_tos(zpu) &= zpu_get_nos(zpu) );
+                        zpu_set_tos( zpu, zpu_get_tos(zpu) & zpu_get_nos(zpu) );
                         break;
                     case ZPU_XOR:
                         zpu_set_nos( zpu, pop( zpu ) );
-                        zpu_set_tos( zpu, zpu_get_tos(zpu) ^= zpu_get_nos(zpu) );
+                        zpu_set_tos( zpu, zpu_get_tos(zpu) ^ zpu_get_nos(zpu) );
                         break;
                     case ZPU_LOADB:
 		                //memoryWriteLong(sp, tos);            //Need this ?
