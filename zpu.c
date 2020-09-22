@@ -1,21 +1,24 @@
-/*
- * ZPU
+/****************************************************************************
+ * Copyright (c) 2020 Mike Sharkey <mike@pikeaero.com>
  *
- * A Virtual Machine for the ZPU architecture as defined by ZyLin Inc.
+ * Permission is hereby granted, free of charge, to any person obtaining a 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
  *
- * By Michael Rychlik
- *
- * Based on an original idea by Toby Seckshund.
- *
- * Optimizations by Bill Henning.
- *
- * Due to the way the VM is optimized here, in order to minimize ZPU memory access,
- * it is rather hard to follow this code from the ZPU zpu->instruction set documentation.
- * Basically the variable "tos" is used to hold the value that is "top of stack" such
- * that it can be accessed quickly without pop/push pairs in many op codes.
- *
- */
-
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * DEALINGS IN THE SOFTWARE.
+ ****************************************************************************/
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>

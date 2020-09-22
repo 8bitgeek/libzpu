@@ -1,4 +1,11 @@
 # zpu
-ZPU bytecode interpreter
+A Virtual Machine for the ZPU architecture as defined by ZyLin Inc.
 
-Under active development, use at your own risk.
+* Multi-segment virtual memory interface.
+
+
+## Compiling
+
+```
+make
+```
