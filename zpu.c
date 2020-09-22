@@ -66,6 +66,28 @@ void zpu_execute(zpu_t* zpu)
 
         zpu->instruction = memoryReadByte(zpu_get_pc(zpu));
 
+        // printf( "%d\n",zpu->instruction);
+
+#if 0
+        if (step == 0)
+        {
+            printf ("#pc,opcode,sp,top_of_stack,next_on_stack\n");
+            printf ("#----------\n");
+            printf ("\n");
+        }
+        printf ("0x%07x 0x%02x 0x%08x 0x%08x 0x%08x\n", zpu->pc, zpu->instruction, zpu->sp, zpu->tos, memoryReadLong(zpu->sp + 4));
+        fflush(0);      
+        //memoryDisplayLong(sp - 16*4, 32);
+        //printf("\n");
+        //getchar();
+        if (step++ == 10000)
+        {
+            printf("Done.\n");
+            fflush(0);  
+            exit(0);
+        }
+#endif
+
         if ((zpu->instruction & 0x80) == ZPU_IM)
         {
             if (zpu->decodeMask)
@@ -140,7 +162,7 @@ void zpu_execute(zpu_t* zpu)
                         zpu_set_tos(zpu,(zpu_get_tos(zpu) * 4) + zpu_get_sp(zpu));
                         break;
                     case ZPU_STORE:
-                        zpu_set_tos(zpu,pop(zpu));
+                        zpu_set_nos(zpu,pop(zpu));
 			            memoryWriteLong(zpu_get_tos(zpu), zpu_get_nos(zpu));
                         zpu_set_tos(zpu,pop(zpu));
                         break;
@@ -292,13 +314,13 @@ void zpu_execute(zpu_t* zpu)
                         zpu_set_tos( zpu, (int32_t)zpu_get_nos(zpu) >> (zpu_get_tos(zpu) & 0x3f) );
                         break;
                     case ZPU_CALL:
-                        zpu_set_nos( zpu, pop(zpu) );
+                        zpu_set_nos( zpu, zpu_get_tos(zpu) );
                         zpu_set_tos( zpu, zpu_get_pc(zpu) + 1 );
                         zpu_set_pc( zpu, zpu_get_nos(zpu) );
                         zpu->touchedPc = true;
                         break;
                     case ZPU_CALLPCREL:
-                        zpu_set_nos( zpu, pop(zpu) );
+                        zpu_set_nos( zpu, zpu_get_tos(zpu) );
                         zpu_set_tos( zpu, zpu_get_pc(zpu) + 1 );
                         zpu_set_pc( zpu, zpu_get_pc(zpu) + zpu_get_nos(zpu) );
                         zpu->touchedPc = true;

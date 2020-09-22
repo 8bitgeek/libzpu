@@ -67,7 +67,7 @@ void memoryWriteLong(uint32_t address, uint32_t value)
     address = address & MEMORY_MASK;
     if ((address & 0x3) != 0)
     {
-        printf ("Write LONG not aligned\n");
+        printf ("Write LONG not aligned: addr=%08x, val=%08x\n", address, value);
         exit(1);
     }
     else if (address < (MEMORY_INTS*4))
