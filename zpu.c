@@ -325,7 +325,6 @@ void zpu_execute(zpu_t* zpu)
                         printf ("CONFIG indicates CPU type is %d\n", zpu_get_cpu(zpu));
                         break;
                     case ZPU_SYSCALL:
-                        // Flush tos to real stack
                         zpu_mem_set_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu), zpu_get_tos(zpu));
                         syscall(zpu);
                         break;

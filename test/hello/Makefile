@@ -3,7 +3,7 @@
 # Creates an assembler listing file - test.lst
 
 # Path to the gcc executable and friends
-TOOLPATH=/home/michael/ZPU/toolchain/install/bin/
+TOOLPATH=/opt/zpu-gcc/bin/
 
 # The compiler/linker
 CC=$(TOOLPATH)zpu-elf-gcc
@@ -16,7 +16,7 @@ OD=$(TOOLPATH)zpu-elf-objdump -D -l --source
 OC=$(TOOLPATH)zpu-elf-objcopy -O binary
 
 # Compiler flags. Compile only, debug info, all warnings, optimize for size
-CFLAGS=-c -g -Wall -Os -std=c99 -DZPU
+CFLAGS=-c -Wall -Os -std=c99 -DZPU
 
 # The ZPU platform Phi board (phi) or Able board (able)
 ZPUPLATFORM=-phi
