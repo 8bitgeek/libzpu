@@ -24,7 +24,6 @@
 #include <stdlib.h>
 
 #include <zpu.h>
-#include <zpu_load.h>
 #include <zpu_mem.h>
 #include <zpu_syscall.h>
 
@@ -34,27 +33,14 @@ static void     printRegs(zpu_t* zpu);
 static uint32_t flip(uint32_t i);
 
 
-void emulate(zpu_t* zpu)
+void zpu_reset(zpu_t* zpu,uint32_t sp)
 {
-    push( zpu, zpu_get_tos(zpu) );
-    zpu_set_tos( zpu, zpu_get_pc(zpu) + 1);
-    zpu_set_pc( zpu, ( zpu_mem_get_uint8( zpu_get_mem(zpu), zpu_get_pc(zpu) ) - 32) * VECTORSIZE + VECTORBASE);
-    zpu->pc_dirty = true;
-}
-
-void zpu_reset(zpu_t* zpu)
-{
-    zpu_load( zpu );
-    zpu_set_pc( zpu, 0 );
+    zpu_set_sp  ( zpu, sp );
+    zpu_set_pc  ( zpu, 0 );
+    zpu_set_tos ( zpu, 0 );
     zpu->instruction = 0;
-    zpu->pc_dirty   = true;
-    zpu->decode_mask  = 0;
-#if 0
-    zpu_set_sp( zpu, 0xFFFFFFF );
-#else
-    zpu_set_sp( zpu, 0x1fff8 );
-#endif
-    zpu_set_tos( zpu, 0 );
+    zpu->pc_dirty    = true;
+    zpu->decode_mask = 0;
 }
 
 void zpu_execute(zpu_t* zpu)
@@ -326,7 +312,7 @@ void zpu_execute(zpu_t* zpu)
                         break;
                     case ZPU_SYSCALL:
                         zpu_mem_set_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu), zpu_get_tos(zpu));
-                        syscall(zpu);
+                        zpu_syscall(zpu);
                         break;
                     default:
                         printf ("Illegal Instruction\n");
@@ -376,5 +362,13 @@ static void printRegs(zpu_t* zpu)
 {
     printf ("PC=%08x SP=%08x TOS=%08x OP=%02x DM=%02x debug=%08x\n", zpu_get_pc(zpu), zpu_get_sp(zpu), zpu_get_tos(zpu), zpu->instruction, zpu->decode_mask, 0);
     fflush(0);
+}
+
+void zpu_emulate(zpu_t* zpu)
+{
+    push( zpu, zpu_get_tos(zpu) );
+    zpu_set_tos( zpu, zpu_get_pc(zpu) + 1 );
+    zpu_set_pc( zpu, ( zpu_mem_get_uint8( zpu_get_mem(zpu), zpu_get_pc(zpu) ) - 32) * VECTORSIZE + VECTORBASE);
+    zpu->pc_dirty = true;
 }
 

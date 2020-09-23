@@ -113,7 +113,10 @@ typedef struct _zpu_
 #define zpu_set_mem(zpu,m)      ((zpu)->mem = (m))
 #define zpu_get_mem(zpu)        ((zpu)->mem)
 
-void zpu_reset(zpu_t* zpu);
-void zpu_execute(zpu_t* zpu);
+#define zpu_set_reset_sp(zpu,v) ((zpu)->reset_sp = (v))
+#define zpu_get_reset_sp(zpu)   ((zpu)->reset_sp)
+
+void zpu_reset   (zpu_t* zpu,uint32_t sp);
+void zpu_execute (zpu_t* zpu);
 
 #endif // ZPU_H

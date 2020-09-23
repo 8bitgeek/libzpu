@@ -5,9 +5,7 @@
 #include <zpu_syscall.h>
 #include <zpu_mem.h>
 
-static int tty_getchar();
-
-void syscall(zpu_t* zpu)
+void zpu_syscall(zpu_t* zpu)
 {
     // int returnAdd = zpu_mem_get_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu) + 0);
     // int errNoAdd = zpu_mem_get_uint32( zpu_get_mem(zpu), zpu_get_sp(zpu) + 4);
@@ -28,20 +26,10 @@ void syscall(zpu_t* zpu)
         case SYS_READ:
             for (int i = 0; i < stringLength; i++)
             {
-                zpu_mem_set_uint8( zpu_get_mem(zpu), charIndex++, tty_getchar());
+                zpu_mem_set_uint8( zpu_get_mem(zpu), charIndex++, getchar());
             }
             // Return value via R0 (AKA memory address 0)
             zpu_mem_set_uint32( zpu_get_mem(zpu), 0, stringLength);
             break;
     }
-}
-
-int tty_fix()
-{
-    return 0;
-}
-
-static int tty_getchar()
-{
-    return getchar();
 }
