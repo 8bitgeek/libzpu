@@ -53,6 +53,7 @@ extern void         zpu_mem_init( zpu_mem_t* zpu_mem_root,
 extern uint32_t     zpu_mem_get_uint32( zpu_mem_t* zpu_mem, uint32_t va );
 extern uint16_t     zpu_mem_get_uint16( zpu_mem_t* zpu_mem, uint32_t va );
 extern uint8_t      zpu_mem_get_uint8( zpu_mem_t* zpu_mem, uint32_t va );
+extern uint8_t      zpu_mem_get_opcode( zpu_mem_t* zpu_mem, uint32_t va );
 
 extern void         zpu_mem_set_uint32( zpu_mem_t* zpu_mem, uint32_t va, uint32_t w );
 extern void         zpu_mem_set_uint16( zpu_mem_t* zpu_mem, uint32_t va, uint16_t w );
@@ -61,6 +62,7 @@ extern void         zpu_mem_set_uint8( zpu_mem_t* zpu_mem, uint32_t va, uint8_t 
 
 /** consumer callbacks (weak bindings) */
 
+extern void zpu_opcode_fetch_notify     ( zpu_mem_t* zpu_mem, uint32_t va );
 extern void zpu_segv_handler            ( zpu_mem_t* zpu_mem, uint32_t va );
 
 extern bool zpu_mem_override_get_uint32 ( zpu_mem_t* zpu_mem, uint32_t va, uint32_t* value );

@@ -49,7 +49,7 @@ void zpu_execute(zpu_t* zpu)
     {
         zpu->pc_dirty = false;
 
-        zpu->instruction = zpu_mem_get_uint8( zpu_get_mem(zpu), zpu_get_pc(zpu) );
+        zpu->instruction = zpu_mem_get_opcode( zpu_get_mem(zpu), zpu_get_pc(zpu) );
 
         if ((zpu->instruction & 0x80) == ZPU_IM)
         {

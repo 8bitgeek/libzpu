@@ -112,6 +112,12 @@ extern uint8_t zpu_mem_get_uint8( zpu_mem_t* zpu_mem, uint32_t va )
     return ZPU_MEM_BAD&0xFF;
 }
 
+extern uint8_t zpu_mem_get_opcode( zpu_mem_t* zpu_mem, uint32_t va )
+{
+    zpu_opcode_fetch_notify( zpu_mem, va );
+    return zpu_mem_get_uint8( zpu_mem, va );
+}
+
 
 extern void zpu_mem_set_uint32( zpu_mem_t* zpu_mem, uint32_t va, uint32_t w )
 {
@@ -194,6 +200,11 @@ static void* zpu_va_to_pa( zpu_mem_t* zpu_mem, uint32_t va )
         return ((uint8_t*)zpu_mem->physical_base) + delta;
     }
     return (uint32_t*)ZPU_MEM_BAD;
+}
+
+extern void zpu_opcode_fetch_notify( zpu_mem_t* zpu_mem, uint32_t va )
+{
+    /* NOP */
 }
 
 void __attribute__((weak)) zpu_segv_handler(zpu_mem_t* zpu_mem, uint32_t va)
