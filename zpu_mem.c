@@ -19,7 +19,6 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
  ****************************************************************************/
-#include <stdio.h>
 #include <stdlib.h>
 #include <zpu_mem.h>
 
@@ -52,27 +51,22 @@ extern void zpu_mem_init( zpu_mem_t* zpu_mem_root,
 
 extern uint32_t zpu_mem_get_uint32( zpu_mem_t* zpu_mem, uint32_t va )
 {
-    // FIXME --- this puke ....
-    // The PHI platform UART status port
-    if (va == 0x80000024)
-    {
-	    return (0x100);
-    }
-    // The ??? platform UART status port
-    if (va == 0x080A000C)
-    {
-	    return (0x100);
-    }
-
-
     zpu_mem_t* zpu_seg = zpu_mem_seg_v( zpu_mem, va );
     if ( zpu_seg )
     {
-        void* pa = zpu_va_to_pa( zpu_seg, va );
-        uint32_t* p = (uint32_t*)pa;
-        return *p;
+        uint32_t value;
+        if ( zpu_mem_override_get_uint32 ( zpu_mem, va, &value ) )
+        {
+            return value;
+        }
+        else
+        {
+            void* pa = zpu_va_to_pa( zpu_seg, va );
+            uint32_t* p = (uint32_t*)pa;
+            return *p;
+        }
     }
-    printf( "segv %04X\n", va);
+    zpu_segv_handler( zpu_mem, va );
     return ZPU_MEM_BAD;
 }
 
@@ -81,54 +75,58 @@ extern uint16_t zpu_mem_get_uint16( zpu_mem_t* zpu_mem, uint32_t va )
     zpu_mem_t* zpu_seg = zpu_mem_seg_v( zpu_mem, va );
     if ( zpu_seg )
     {
-        void* pa = zpu_va_to_pa( zpu_seg, va ^ 0x02 );
-        uint16_t* p = (uint16_t*)pa;
-        return *p;
+        uint16_t value;
+        if ( zpu_mem_override_get_uint16 ( zpu_mem, va, &value ) )
+        {
+            return value;
+        }
+        else
+        {
+            void* pa = zpu_va_to_pa( zpu_seg, va ^ 0x02 );
+            uint16_t* p = (uint16_t*)pa;
+            return *p;
+        }
     }
-    printf( "segv %04X\n", va);
+    zpu_segv_handler( zpu_mem, va );
     return ZPU_MEM_BAD&0xFFFF;
 }
 
-extern uint8_t  zpu_mem_get_uint8( zpu_mem_t* zpu_mem, uint32_t va )
+extern uint8_t zpu_mem_get_uint8( zpu_mem_t* zpu_mem, uint32_t va )
 {
     zpu_mem_t* zpu_seg = zpu_mem_seg_v( zpu_mem, va );
     if ( zpu_seg )
     {
-        void* pa = zpu_va_to_pa( zpu_seg, va ^ 0x03 );
-        uint8_t* p = (uint8_t*)pa;
-        return *p;
+        uint8_t value;
+        if ( zpu_mem_override_get_uint8 ( zpu_mem, va, &value ) )
+        {
+            return value;
+        }
+        else
+        {
+            void* pa = zpu_va_to_pa( zpu_seg, va ^ 0x03 );
+            uint8_t* p = (uint8_t*)pa;
+            return *p;
+        }
     }
-    printf( "segv %04X\n", va);
+    zpu_segv_handler( zpu_mem, va );
     return ZPU_MEM_BAD&0xFF;
 }
 
 
 extern void zpu_mem_set_uint32( zpu_mem_t* zpu_mem, uint32_t va, uint32_t w )
 {
-    // FIXME - THis puke...
-    // The PHI platform UART port
-    if (va == 0x80000024)
-    {
-    	printf("%c", (char)w);
-    	return;
-    }
-    // The ??? platform UART port
-    if (va == 0x080A000C)
-    {
-    	printf("%c", (char)w);
-    	return;
-    }
-
-
     zpu_mem_t* zpu_seg = zpu_mem_seg_v( zpu_mem, va );
     if ( zpu_seg )
     {
-        void* pa = zpu_va_to_pa( zpu_seg, va );
-        uint32_t* p = (uint32_t*)pa;
-        *p = w;
+        if ( !zpu_mem_override_set_uint32 ( zpu_mem, va, w ) )
+        {
+            void* pa = zpu_va_to_pa( zpu_seg, va );
+            uint32_t* p = (uint32_t*)pa;
+            *p = w;
+        }
         return;
     }
-    printf( "segv %04X\n", va);
+    zpu_segv_handler( zpu_mem, va );
 }
 
 extern void zpu_mem_set_uint16( zpu_mem_t* zpu_mem, uint32_t va, uint16_t w )
@@ -136,12 +134,15 @@ extern void zpu_mem_set_uint16( zpu_mem_t* zpu_mem, uint32_t va, uint16_t w )
     zpu_mem_t* zpu_seg = zpu_mem_seg_v( zpu_mem, va );
     if ( zpu_seg )
     {
-        void* pa = zpu_va_to_pa( zpu_seg, va ^ 0x02 );
-        uint16_t* p = (uint16_t*)pa;
-        *p = w;
+        if ( !zpu_mem_override_set_uint16 ( zpu_mem, va, w ) )
+        {
+            void* pa = zpu_va_to_pa( zpu_seg, va ^ 0x02 );
+            uint16_t* p = (uint16_t*)pa;
+            *p = w;
+        }
         return;
     }
-    printf( "segv %04X\n", va);
+    zpu_segv_handler( zpu_mem, va );
 }
 
 extern void zpu_mem_set_uint8( zpu_mem_t* zpu_mem, uint32_t va, uint8_t w )
@@ -149,12 +150,15 @@ extern void zpu_mem_set_uint8( zpu_mem_t* zpu_mem, uint32_t va, uint8_t w )
     zpu_mem_t* zpu_seg = zpu_mem_seg_v( zpu_mem, va );
     if ( zpu_seg )
     {
-        void* pa = zpu_va_to_pa( zpu_seg, va ^ 0x03 );
-        uint8_t* p = (uint8_t*)pa;
-        *p = w;
+        if ( !zpu_mem_override_set_uint8 ( zpu_mem, va, w ) )
+        {
+            void* pa = zpu_va_to_pa( zpu_seg, va ^ 0x03 );
+            uint8_t* p = (uint8_t*)pa;
+            *p = w;
+        }
         return;
     }
-    printf( "segv %04X\n", va);
+    zpu_segv_handler( zpu_mem, va );
 }
 
 
@@ -191,4 +195,46 @@ static void* zpu_va_to_pa( zpu_mem_t* zpu_mem, uint32_t va )
     }
     return (uint32_t*)ZPU_MEM_BAD;
 }
+
+void __attribute__((weak)) zpu_segv_handler(zpu_mem_t* zpu_mem, uint32_t va)
+{
+    /* NOP */
+}
+
+extern bool __attribute__((weak)) zpu_mem_override_get_uint32 ( zpu_mem_t* zpu_mem, uint32_t va, uint32_t* value )
+{
+    /* NOP */
+    return false;
+}
+
+extern bool __attribute__((weak)) zpu_mem_override_get_uint16 ( zpu_mem_t* zpu_mem, uint32_t va, uint16_t* value )
+{
+    /* NOP */
+    return false;
+}
+
+extern bool __attribute__((weak)) zpu_mem_override_get_uint8  ( zpu_mem_t* zpu_mem, uint32_t va, uint8_t* value )
+{
+    /* NOP */
+    return false;
+}
+
+extern bool __attribute__((weak)) zpu_mem_override_set_uint32 ( zpu_mem_t* zpu_mem, uint32_t va, uint32_t w )
+{
+    /* NOP */
+    return false;
+}
+
+extern bool __attribute__((weak)) zpu_mem_override_set_uint16 ( zpu_mem_t* zpu_mem, uint32_t va, uint16_t w )
+{
+    /* NOP */
+    return false;
+}
+
+extern bool __attribute__((weak)) zpu_mem_override_set_uint8  ( zpu_mem_t* zpu_mem, uint32_t va, uint8_t w )
+{
+    /* NOP */
+    return false;
+}
+
 

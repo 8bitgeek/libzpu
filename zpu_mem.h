@@ -23,6 +23,7 @@
 #define ZPU_MEM_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define ZPU_MEM_BAD     0xFEFEFEFE
 
@@ -56,6 +57,19 @@ extern uint8_t      zpu_mem_get_uint8( zpu_mem_t* zpu_mem, uint32_t va );
 extern void         zpu_mem_set_uint32( zpu_mem_t* zpu_mem, uint32_t va, uint32_t w );
 extern void         zpu_mem_set_uint16( zpu_mem_t* zpu_mem, uint32_t va, uint16_t w );
 extern void         zpu_mem_set_uint8( zpu_mem_t* zpu_mem, uint32_t va, uint8_t w );
+
+
+/** consumer callbacks (weak bindings) */
+
+extern void zpu_segv_handler            ( zpu_mem_t* zpu_mem, uint32_t va );
+
+extern bool zpu_mem_override_get_uint32 ( zpu_mem_t* zpu_mem, uint32_t va, uint32_t* value );
+extern bool zpu_mem_override_get_uint16 ( zpu_mem_t* zpu_mem, uint32_t va, uint16_t* value );
+extern bool zpu_mem_override_get_uint8  ( zpu_mem_t* zpu_mem, uint32_t va, uint8_t* value );
+
+extern bool zpu_mem_override_set_uint32 ( zpu_mem_t* zpu_mem, uint32_t va, uint32_t w );
+extern bool zpu_mem_override_set_uint16 ( zpu_mem_t* zpu_mem, uint32_t va, uint16_t w );
+extern bool zpu_mem_override_set_uint8  ( zpu_mem_t* zpu_mem, uint32_t va, uint8_t w );
 
 #endif
 

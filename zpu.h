@@ -116,7 +116,13 @@ typedef struct _zpu_
 #define zpu_set_reset_sp(zpu,v) ((zpu)->reset_sp = (v))
 #define zpu_get_reset_sp(zpu)   ((zpu)->reset_sp)
 
-void zpu_reset   (zpu_t* zpu,uint32_t sp);
-void zpu_execute (zpu_t* zpu);
+extern void zpu_reset   (zpu_t* zpu,uint32_t sp);
+extern void zpu_execute (zpu_t* zpu);
+
+/** consumer callbacks (weak bindings) */
+extern void zpu_breakpoint_handler     (zpu_t* zpu);
+extern void zpu_divzero_handler        (zpu_t* zpu);
+extern void zpu_config_handler         (zpu_t* zpu);
+extern void zpu_illegal_opcode_handler (zpu_t* zpu);
 
 #endif // ZPU_H
