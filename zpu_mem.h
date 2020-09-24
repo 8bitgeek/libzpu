@@ -26,6 +26,10 @@
 #include <stdbool.h>
 
 #define ZPU_MEM_BAD     0xFEFEFEFE
+#define ZPU_MEM_ATTR_RD 0x01
+#define ZPU_MEM_ATTR_WR 0x02
+#define ZPU_MEM_ATTR_EX 0x04
+#define ZPU_MEM_ATTR_IO 0x08
 
 typedef struct _zpu_mem_
 {
@@ -34,6 +38,7 @@ typedef struct _zpu_mem_
     void*               physical_base;
     uint32_t            virtual_base;
     uint32_t            size;
+    uint8_t             attr;
 } zpu_mem_t;
 
 #define zpu_mem_set_physical_base(zpu_mem,b)    ((zpu_mem)->physical_base = (b)) 
@@ -42,13 +47,17 @@ typedef struct _zpu_mem_
 #define zpu_mem_get_size(zpu_mem)               ((zpu_mem)->size) 
 #define zpu_mem_set_next(zpu_mem,n)             ((zpu_mem)->next = (n)) 
 #define zpu_mem_set_name(zpu_mem,n)             ((zpu_mem)->name = (n))
+#define zpu_mem_get_name(zpu_mem)               ((zpu_mem)->name)
+#define zpu_mem_set_attr(zpu_mem,n)             ((zpu_mem)->attr = (n))
+#define zpu_mem_get_attr(zpu_mem)               ((zpu_mem)->attr)
 
 extern void         zpu_mem_init( zpu_mem_t* zpu_mem_root, 
                                   zpu_mem_t* zpu_mem_seg, 
                                   const char* name, 
                                   void* physical_base, 
                                   uint32_t virtual_base, 
-                                  uint32_t size );
+                                  uint32_t size,
+                                  uint8_t attr );
 
 extern uint32_t     zpu_mem_get_uint32( zpu_mem_t* zpu_mem, uint32_t va );
 extern uint16_t     zpu_mem_get_uint16( zpu_mem_t* zpu_mem, uint32_t va );

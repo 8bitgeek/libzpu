@@ -32,7 +32,8 @@ extern void zpu_mem_init( zpu_mem_t* zpu_mem_root,
                           const char* name, 
                           void* physical_base, 
                           uint32_t virtual_base, 
-                          uint32_t size )
+                          uint32_t size,
+                          uint8_t attr )
 {
     if ( zpu_mem_root )
     {
@@ -45,6 +46,7 @@ extern void zpu_mem_init( zpu_mem_t* zpu_mem_root,
         zpu_mem_seg->physical_base = physical_base;
         zpu_mem_seg->virtual_base = virtual_base;
         zpu_mem_seg->size = size;
+        zpu_mem_seg->attr = attr;
     }
 }
 
@@ -52,7 +54,7 @@ extern void zpu_mem_init( zpu_mem_t* zpu_mem_root,
 extern uint32_t zpu_mem_get_uint32( zpu_mem_t* zpu_mem, uint32_t va )
 {
     zpu_mem_t* zpu_seg = zpu_mem_seg_v( zpu_mem, va );
-    if ( zpu_seg )
+    if ( zpu_seg && zpu_mem_get_attr(zpu_mem) & ZPU_MEM_ATTR_RD )
     {
         uint32_t value;
         if ( zpu_mem_override_get_uint32 ( zpu_mem, va, &value ) )
@@ -73,7 +75,7 @@ extern uint32_t zpu_mem_get_uint32( zpu_mem_t* zpu_mem, uint32_t va )
 extern uint16_t zpu_mem_get_uint16( zpu_mem_t* zpu_mem, uint32_t va )
 {
     zpu_mem_t* zpu_seg = zpu_mem_seg_v( zpu_mem, va );
-    if ( zpu_seg )
+    if ( zpu_seg && zpu_mem_get_attr(zpu_mem) & ZPU_MEM_ATTR_RD )
     {
         uint16_t value;
         if ( zpu_mem_override_get_uint16 ( zpu_mem, va, &value ) )
@@ -94,7 +96,7 @@ extern uint16_t zpu_mem_get_uint16( zpu_mem_t* zpu_mem, uint32_t va )
 extern uint8_t zpu_mem_get_uint8( zpu_mem_t* zpu_mem, uint32_t va )
 {
     zpu_mem_t* zpu_seg = zpu_mem_seg_v( zpu_mem, va );
-    if ( zpu_seg )
+    if ( zpu_seg && zpu_mem_get_attr(zpu_mem) & ZPU_MEM_ATTR_RD )
     {
         uint8_t value;
         if ( zpu_mem_override_get_uint8 ( zpu_mem, va, &value ) )
@@ -114,15 +116,20 @@ extern uint8_t zpu_mem_get_uint8( zpu_mem_t* zpu_mem, uint32_t va )
 
 extern uint8_t zpu_mem_get_opcode( zpu_mem_t* zpu_mem, uint32_t va )
 {
-    zpu_opcode_fetch_notify( zpu_mem, va );
-    return zpu_mem_get_uint8( zpu_mem, va );
+    if ( (zpu_mem_get_attr(zpu_mem) & (ZPU_MEM_ATTR_RD|ZPU_MEM_ATTR_EX)) ==  (ZPU_MEM_ATTR_RD|ZPU_MEM_ATTR_EX) )
+    {
+        zpu_opcode_fetch_notify( zpu_mem, va );
+        return zpu_mem_get_uint8( zpu_mem, va );
+    }
+    zpu_segv_handler( zpu_mem, va );
+    return ZPU_MEM_BAD&0xFF;
 }
 
 
 extern void zpu_mem_set_uint32( zpu_mem_t* zpu_mem, uint32_t va, uint32_t w )
 {
     zpu_mem_t* zpu_seg = zpu_mem_seg_v( zpu_mem, va );
-    if ( zpu_seg )
+    if ( zpu_seg && zpu_mem_get_attr(zpu_mem) & ZPU_MEM_ATTR_WR )
     {
         if ( !zpu_mem_override_set_uint32 ( zpu_mem, va, w ) )
         {
@@ -138,7 +145,7 @@ extern void zpu_mem_set_uint32( zpu_mem_t* zpu_mem, uint32_t va, uint32_t w )
 extern void zpu_mem_set_uint16( zpu_mem_t* zpu_mem, uint32_t va, uint16_t w )
 {
     zpu_mem_t* zpu_seg = zpu_mem_seg_v( zpu_mem, va );
-    if ( zpu_seg )
+    if ( zpu_seg && zpu_mem_get_attr(zpu_mem) & ZPU_MEM_ATTR_WR )
     {
         if ( !zpu_mem_override_set_uint16 ( zpu_mem, va, w ) )
         {
@@ -154,7 +161,7 @@ extern void zpu_mem_set_uint16( zpu_mem_t* zpu_mem, uint32_t va, uint16_t w )
 extern void zpu_mem_set_uint8( zpu_mem_t* zpu_mem, uint32_t va, uint8_t w )
 {
     zpu_mem_t* zpu_seg = zpu_mem_seg_v( zpu_mem, va );
-    if ( zpu_seg )
+    if ( zpu_seg && zpu_mem_get_attr(zpu_mem) & ZPU_MEM_ATTR_WR )
     {
         if ( !zpu_mem_override_set_uint8 ( zpu_mem, va, w ) )
         {
