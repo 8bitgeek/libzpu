@@ -209,12 +209,12 @@ static void* zpu_va_to_pa( zpu_mem_t* zpu_mem, uint32_t va )
     return (uint32_t*)ZPU_MEM_BAD;
 }
 
-extern void zpu_opcode_fetch_notify( zpu_mem_t* zpu_mem, uint32_t va )
+extern void __attribute__((weak)) zpu_opcode_fetch_notify( zpu_mem_t* zpu_mem, uint32_t va )
 {
     /* NOP */
 }
 
-void __attribute__((weak)) zpu_segv_handler(zpu_mem_t* zpu_mem, uint32_t va)
+extern void __attribute__((weak)) zpu_segv_handler(zpu_mem_t* zpu_mem, uint32_t va)
 {
     /* NOP */
 }
