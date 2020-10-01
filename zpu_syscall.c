@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <termio.h>
 
 #include <zpu_syscall.h>
 #include <zpu_mem.h>

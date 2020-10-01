@@ -23,8 +23,15 @@
 #ifndef ZPU_H
 #define ZPU_H
 
-#include <stdint.h>
-#include <stdbool.h>
+
+#if defined(_CARIBOU_RTOS_)
+    #include <caribou/kernel/types.h> 
+#else
+    #include <stdint.h>
+    #include <stdbool.h>
+    #include <stdlib.h>
+#endif
+
 #include <zpu_mem.h>
 
 #define ZPU_IM               128

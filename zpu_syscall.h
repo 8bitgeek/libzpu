@@ -1,7 +1,6 @@
 #ifndef ZPU_SYSCALL_H
 #define ZPU_SYSCALL_H
 
-#include <stdint.h>
 #include <zpu.h>
 
 // syscall ID numbers

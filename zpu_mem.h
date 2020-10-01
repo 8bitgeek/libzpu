@@ -22,8 +22,12 @@
 #ifndef ZPU_MEM_H
 #define ZPU_MEM_H
 
-#include <stdint.h>
-#include <stdbool.h>
+#if defined(_CARIBOU_RTOS_)
+    #include <caribou/kernel/types.h> 
+#else
+    #include <stdint.h>
+    #include <stdbool.h>
+#endif
 
 #define ZPU_MEM_BAD     0xFEFEFEFE
 #define ZPU_MEM_ATTR_RD 0x01
