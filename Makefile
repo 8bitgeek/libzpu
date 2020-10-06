@@ -1,6 +1,7 @@
 TARGET=libzpu.a
 
-CFLAGS+=-O2 -I./
+#CFLAGS+=-O2 -I./
+CFLAGS+=-ggdb -I./
 
 all:	$(TARGET)
 

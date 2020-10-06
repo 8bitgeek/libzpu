@@ -25,6 +25,7 @@
 #if defined(_CARIBOU_RTOS_)
     #include <caribou/kernel/types.h> 
 #else
+    #include <stddef.h>
     #include <stdint.h>
     #include <stdbool.h>
 #endif
@@ -43,6 +44,7 @@ typedef struct _zpu_mem_
     uint32_t            virtual_base;
     uint32_t            size;
     uint8_t             attr;
+    bool                prot_enabled;
 } zpu_mem_t;
 
 #define zpu_mem_set_physical_base(zpu_mem,b)    ((zpu_mem)->physical_base = (b)) 
@@ -62,6 +64,8 @@ extern void         zpu_mem_init( zpu_mem_t* zpu_mem_root,
                                   uint32_t virtual_base, 
                                   uint32_t size,
                                   uint8_t attr );
+
+extern void         zpu_mem_set_prot( zpu_mem_t* zpu_mem, bool enabled );
 
 extern uint32_t     zpu_mem_get_uint32( zpu_mem_t* zpu_mem, uint32_t va );
 extern uint16_t     zpu_mem_get_uint16( zpu_mem_t* zpu_mem, uint32_t va );
